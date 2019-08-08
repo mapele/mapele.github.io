@@ -1,0 +1,1504 @@
+<!DOCTYPE html>
+
+
+
+  
+
+
+<html class="theme-next muse use-motion" lang="zh-Hans">
+<head>
+  <meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform">
+<meta http-equiv="Cache-Control" content="no-siteapp">
+
+
+
+  <meta name="google-site-verification" content="1IOwQW6YZVg6mOmylSpxqxvDx_NzWaYzlEBvRi70mwo">
+
+
+
+
+
+
+
+
+  <meta name="baidu-site-verification" content="ckzRD2UGj3">
+
+
+
+
+
+
+
+  
+  
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css">
+
+
+
+
+  
+  
+  
+  
+
+  
+    
+    
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+    
+    
+    <link href="//fonts.googleapis.com/css?family=Lato:300,300italic,400,400italic,700,700italic&subset=latin,latin-ext" rel="stylesheet" type="text/css">
+  
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css">
+
+<link href="/css/main.css?v=5.1.2" rel="stylesheet" type="text/css">
+
+
+  <meta name="keywords" content="oracle,RAC,ASM,">
+
+
+
+
+
+  <link rel="alternate" href="/atom.xml" title="57°极客闷骚" type="application/atom+xml">
+
+
+
+
+  <link rel="shortcut icon" type="image/x-icon" href="/images/favicon.ico?v=5.1.2">
+
+
+
+
+
+
+<meta name="description" content="前言本小结借鉴于网上各种Oracle RAC安装说明，只记录大致操作，对于安装过程中遇到的问题及具体安装细节未做过多说明，若要参考此文档，需根据自身具体环境而定！ 环境准备硬件 节点服务器*2     项目 说明     CPU Intel(R) Xeon(R) CPU E5506 @ 2.13GHz *8   内存 64G   硬盘 4*500G 7500转以上   HBA 2块（网络冗余）">
+<meta name="keywords" content="oracle,RAC,ASM">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Oracle11gR2 RAC Install On CentOS6.5小结">
+<meta property="og:url" content="http://mapele.coding.me/posts/43680/index.html">
+<meta property="og:site_name" content="57°极客闷骚">
+<meta property="og:description" content="前言本小结借鉴于网上各种Oracle RAC安装说明，只记录大致操作，对于安装过程中遇到的问题及具体安装细节未做过多说明，若要参考此文档，需根据自身具体环境而定！ 环境准备硬件 节点服务器*2     项目 说明     CPU Intel(R) Xeon(R) CPU E5506 @ 2.13GHz *8   内存 64G   硬盘 4*500G 7500转以上   HBA 2块（网络冗余）">
+<meta property="og:locale" content="zh-Hans">
+<meta property="og:updated_time" content="2019-08-08T05:16:37.015Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Oracle11gR2 RAC Install On CentOS6.5小结">
+<meta name="twitter:description" content="前言本小结借鉴于网上各种Oracle RAC安装说明，只记录大致操作，对于安装过程中遇到的问题及具体安装细节未做过多说明，若要参考此文档，需根据自身具体环境而定！ 环境准备硬件 节点服务器*2     项目 说明     CPU Intel(R) Xeon(R) CPU E5506 @ 2.13GHz *8   内存 64G   硬盘 4*500G 7500转以上   HBA 2块（网络冗余）">
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Muse',
+    version: '5.1.2',
+    sidebar: {"position":"left","display":"post","offset":10,"offset_float":10,"b2t":false,"scrollpercent":false,"onmobile":true},
+    fancybox: true,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn"}},
+    duoshuo: {
+      userId: '0',
+      author: '博主'
+    },
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+
+  <link rel="canonical" href="http://mapele.coding.me/posts/43680/">
+
+
+
+
+
+  <title>Oracle11gR2 RAC Install On CentOS6.5小结 | 57°极客闷骚</title>
+  
+
+
+
+
+
+
+
+
+</head>
+
+<body itemscope="" itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope="" itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">57°极客闷骚</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <h1 class="site-subtitle" itemprop="description">Yes, you can!</h1>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br>
+            
+            首页
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-about">
+          <a href="/about" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-user"></i> <br>
+            
+            关于
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-tags">
+          <a href="/tags" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-tags"></i> <br>
+            
+            标签
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-categories">
+          <a href="/categories" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-th"></i> <br>
+            
+            分类
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br>
+            
+            归档
+          </a>
+        </li>
+      
+
+      
+        <li class="menu-item menu-item-search">
+          
+            <a href="javascript:;" class="popup-trigger">
+          
+            
+              <i class="menu-item-icon fa fa-search fa-fw"></i> <br>
+            
+            搜索
+          </a>
+        </li>
+      
+    </ul>
+  
+
+  
+    <div class="site-search">
+      
+  <div class="popup search-popup local-search-popup">
+  <div class="local-search-header clearfix">
+    <span class="search-icon">
+      <i class="fa fa-search"></i>
+    </span>
+    <span class="popup-btn-close">
+      <i class="fa fa-times-circle"></i>
+    </span>
+    <div class="local-search-input-wrapper">
+      <input autocomplete="off" placeholder="搜索..." spellcheck="false" type="text" id="local-search-input">
+    </div>
+  </div>
+  <div id="local-search-result"></div>
+</div>
+
+
+
+    </div>
+  
+</nav>
+
+
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope="" itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://mapele.coding.me/posts/43680/">
+
+    <span hidden itemprop="author" itemscope="" itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="Mapele">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope="" itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="57°极客闷骚">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h2 class="post-title" itemprop="name headline">Oracle11gR2 RAC Install On CentOS6.5小结</h2>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2013-07-16T22:34:03+08:00">
+                2013/07/16
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+            <span class="post-category">
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope="" itemtype="http://schema.org/Thing">
+                  <a href="/categories/Database/" itemprop="url" rel="index">
+                    <span itemprop="name">Database</span>
+                  </a>
+                </span>
+
+                
+                
+                  ， 
+                
+              
+                <span itemprop="about" itemscope="" itemtype="http://schema.org/Thing">
+                  <a href="/categories/Database/Oracle/" itemprop="url" rel="index">
+                    <span itemprop="name">Oracle</span>
+                  </a>
+                </span>
+
+                
+                
+                  ， 
+                
+              
+                <span itemprop="about" itemscope="" itemtype="http://schema.org/Thing">
+                  <a href="/categories/Database/Oracle/RAC/" itemprop="url" rel="index">
+                    <span itemprop="name">RAC</span>
+                  </a>
+                </span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+              <span class="post-comments-count">
+                <span class="post-meta-divider">|</span>
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-comment-o"></i>
+                </span>
+                <a href="/posts/43680/#comments" itemprop="discussionUrl">
+                  <span class="post-comments-count disqus-comment-count" data-disqus-identifier="posts/43680/" itemprop="commentCount"></span>
+                </a>
+              </span>
+            
+          
+
+          
+          
+
+          
+            <span class="post-meta-divider">|</span>
+            <span class="page-pv"><i class="fa fa-file-o"> 阅读量</i>
+            <span class="busuanzi-value" id="busuanzi_value_page_pv"></span>
+            </span>
+          
+
+          
+            <div class="post-wordcount">
+              
+                
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-file-word-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">字数统计&#58;</span>
+                
+                <span title="字数统计">
+                  1,857
+                </span>
+              
+
+              
+                <span class="post-meta-divider">|</span>
+              
+
+              
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-clock-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">阅读时长 &asymp;</span>
+                
+                <span title="阅读时长">
+                  10
+                </span>
+              
+            </div>
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <h3 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h3><p><em>本小结借鉴于网上各种Oracle RAC安装说明，只记录大致操作，对于安装过程中遇到的问题及具体安装细节未做过多说明，若要参考此文档，需根据自身具体环境而定！</em></p>
+<h3 id="环境准备"><a href="#环境准备" class="headerlink" title="环境准备"></a>环境准备</h3><h4 id="硬件"><a href="#硬件" class="headerlink" title="硬件"></a>硬件</h4><ul>
+<li><strong>节点服务器*2</strong></li>
+</ul>
+<table>
+<thead>
+<tr>
+<th style="text-align:right">项目</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:right">CPU</td>
+<td>Intel(R) Xeon(R) CPU E5506 @ 2.13GHz *8</td>
+</tr>
+<tr>
+<td style="text-align:right">内存</td>
+<td>64G</td>
+</tr>
+<tr>
+<td style="text-align:right">硬盘</td>
+<td>4*500G 7500转以上</td>
+</tr>
+<tr>
+<td style="text-align:right">HBA</td>
+<td>2块（网络冗余）</td>
+</tr>
+<tr>
+<td style="text-align:right">网卡</td>
+<td>3个千兆网口</td>
+</tr>
+</tbody>
+</table>
+<ul>
+<li><strong>SAN共享存储服务器*1</strong></li>
+</ul>
+<table>
+<thead>
+<tr>
+<th style="text-align:right">项目</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:right">缓存</td>
+<td>32G</td>
+</tr>
+<tr>
+<td style="text-align:right">容量</td>
+<td>12T 可扩展</td>
+</tr>
+<tr>
+<td style="text-align:right">端口</td>
+<td>4个FC</td>
+</tr>
+</tbody>
+</table>
+<h4 id="软件"><a href="#软件" class="headerlink" title="软件"></a>软件</h4><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div></pre></td><td class="code"><pre><div class="line">OS:CentOS 6.5 x86_64</div><div class="line">数据库软件：Oracle 11.2.0.4</div><div class="line">集群套件：Oracle Grid 11.2.0.4</div></pre></td></tr></table></figure>
+<h3 id="架构及规划"><a href="#架构及规划" class="headerlink" title="架构及规划"></a>架构及规划</h3><h4 id="拓扑"><a href="#拓扑" class="headerlink" title="拓扑"></a>拓扑</h4><h4 id="配置规划"><a href="#配置规划" class="headerlink" title="配置规划"></a>配置规划</h4><ul>
+<li><strong> 节点配置 </strong></li>
+</ul>
+<table>
+<thead>
+<tr>
+<th style="text-align:center">节点名称</th>
+<th style="text-align:center">实例名称</th>
+<th style="text-align:center">数据库名称</th>
+<th style="text-align:center">处理器</th>
+<th style="text-align:center">RAM</th>
+<th style="text-align:center">操作系统</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:center">rac1</td>
+<td style="text-align:center">wlc1</td>
+<td style="text-align:center">wwlc</td>
+<td style="text-align:center">8</td>
+<td style="text-align:center">32GB</td>
+<td style="text-align:center">CentOS 6.5 x86_64</td>
+</tr>
+<tr>
+<td style="text-align:center">rac2</td>
+<td style="text-align:center">wlc2</td>
+<td style="text-align:center">wwlc</td>
+<td style="text-align:center">8</td>
+<td style="text-align:center">32GB</td>
+<td style="text-align:center">CentOS 6.5 x86_64</td>
+</tr>
+</tbody>
+</table>
+<ul>
+<li><strong> 网络配置 </strong></li>
+</ul>
+<table>
+<thead>
+<tr>
+<th style="text-align:center">节点名称</th>
+<th style="text-align:center">Public IP</th>
+<th style="text-align:center">Private IP</th>
+<th style="text-align:center">VIP</th>
+<th style="text-align:center">SCAN名称</th>
+<th style="text-align:center">SCAN IP</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:center">rac1</td>
+<td style="text-align:center">192.168.199.11</td>
+<td style="text-align:center">192.168.1.11</td>
+<td style="text-align:center">192.168.199.13</td>
+<td style="text-align:center">scan</td>
+<td style="text-align:center">192.168.199.15</td>
+</tr>
+<tr>
+<td style="text-align:center">rac2</td>
+<td style="text-align:center">192.168.199.12</td>
+<td style="text-align:center">192.168.1.12</td>
+<td style="text-align:center">192.168.199.14</td>
+<td style="text-align:center">scan</td>
+<td style="text-align:center">192.168.199.15</td>
+</tr>
+</tbody>
+</table>
+<ul>
+<li><strong> 软件组件 </strong></li>
+</ul>
+<table>
+<thead>
+<tr>
+<th style="text-align:center">软件组件</th>
+<th style="text-align:center">操作系统用户</th>
+<th style="text-align:center">主组</th>
+<th style="text-align:center">辅助组</th>
+<th style="text-align:center">Oracle基目录</th>
+<th style="text-align:center">Oracle主目录</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:center">Grid infra</td>
+<td style="text-align:center">grid</td>
+<td style="text-align:center">oinstall</td>
+<td style="text-align:center">asmadmin、asmdba、asmoper</td>
+<td style="text-align:center">/u01/app/grid_base</td>
+<td style="text-align:center">/u01/app/grid_home</td>
+</tr>
+<tr>
+<td style="text-align:center">Oracle RAC</td>
+<td style="text-align:center">oracle</td>
+<td style="text-align:center">oinstall</td>
+<td style="text-align:center">dba、oper、asmdba</td>
+<td style="text-align:center">/u01/app/oracle</td>
+<td style="text-align:center">/u01/app/oracle/p  roduct/11.2.0/db</td>
+</tr>
+</tbody>
+</table>
+<ul>
+<li><strong> 存储组件 </strong></li>
+</ul>
+<table>
+<thead>
+<tr>
+<th style="text-align:center">存储组件</th>
+<th style="text-align:center">类型</th>
+<th style="text-align:center">卷大小</th>
+<th style="text-align:center">ASM卷组名</th>
+<th style="text-align:center">ASM冗余</th>
+<th style="text-align:center">设备名</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:center">OCR/VF</td>
+<td style="text-align:center">ASM</td>
+<td style="text-align:center">6G</td>
+<td style="text-align:center">OCR</td>
+<td style="text-align:center">External</td>
+<td style="text-align:center">/dev/asm_diskb</td>
+</tr>
+<tr>
+<td style="text-align:center">数据</td>
+<td style="text-align:center">ASM</td>
+<td style="text-align:center">1.5T</td>
+<td style="text-align:center">DATA</td>
+<td style="text-align:center">External</td>
+<td style="text-align:center">/dev/asm_diskc</td>
+</tr>
+<tr>
+<td style="text-align:center">归档</td>
+<td style="text-align:center">ASM</td>
+<td style="text-align:center">1.5T</td>
+<td style="text-align:center">ARCH</td>
+<td style="text-align:center">External</td>
+<td style="text-align:center">/dev/asm_diskd</td>
+</tr>
+</tbody>
+</table>
+<h3 id="系统准备"><a href="#系统准备" class="headerlink" title="系统准备"></a>系统准备</h3><h4 id="修改主机名"><a href="#修改主机名" class="headerlink" title="修改主机名"></a>修改主机名</h4><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div></pre></td><td class="code"><pre><div class="line">$vi /etc/sysconfig/network</div><div class="line">节点1</div><div class="line">NETWORKING=yes</div><div class="line">HOSTNAME=rac1</div><div class="line">NETWORKING_IPV6=no</div><div class="line">PEERNTP=no</div><div class="line">GATEWAY=192.168.199.1</div><div class="line">NOZEROCONF=yes</div><div class="line">节点2</div><div class="line">NETWORKING=yes</div><div class="line">HOSTNAME=rac2</div><div class="line">NETWORKING_IPV6=no</div><div class="line">PEERNTP=no</div><div class="line">GATEWAY=192.168.199.1</div><div class="line">NOZEROCONF=yes</div><div class="line">NOZEROCONF=ye</div></pre></td></tr></table></figure>
+<h4 id="修改-etc-hosts"><a href="#修改-etc-hosts" class="headerlink" title="修改/etc/hosts"></a>修改/etc/hosts</h4><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div></pre></td><td class="code"><pre><div class="line">节点1、节点2</div><div class="line">192.168.199.11 rac1</div><div class="line">192.168.199.12 rac2</div><div class="line">192.168.199.13 rac1-vip</div><div class="line">192.168.199.14 rac2-vip</div><div class="line">192.168.1.11 rac1-priv</div><div class="line">192.168.1.12 rac2-priv</div><div class="line">192.168.199.15 scan-ip</div></pre></td></tr></table></figure>
+<h4 id="修改内核参数"><a href="#修改内核参数" class="headerlink" title="修改内核参数"></a>修改内核参数</h4><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div></pre></td><td class="code"><pre><div class="line">$vi /etc/sysctl.conf</div><div class="line">fs.aio-max-nr = 1048576</div><div class="line">fs.file-max = 6815744</div><div class="line">kernel.shmall =7864320 #内存大小/4096分页大小 </div><div class="line">kernel.shmmax = 52451655680 #内存大小</div><div class="line">kernel.shmmni = 4096</div><div class="line">kernel.sem = 250 32000 100 128</div><div class="line">net.ipv4.ip_local_port_range = 9000 65500</div><div class="line">net.core.rmem_default = 262144</div><div class="line">net.core.rmem_max = 4194304</div><div class="line">net.core.wmem_default = 262144</div><div class="line">net.core.wmem_max = 1048586</div><div class="line">vm.nr_hugepages = sga/pagesize  #开启hugepage，oracle锁定内存防止换出</div><div class="line"></div><div class="line">$sysctl –p</div></pre></td></tr></table></figure>
+<h4 id="配置NTP"><a href="#配置NTP" class="headerlink" title="配置NTP"></a>配置NTP</h4><p><em>oracle rac必须进行时钟同步，如果没有时钟同步，按照下面的方式配置，让oracle自身来解决</em><br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div></pre></td><td class="code"><pre><div class="line">$/sbin/service ntpd stop</div><div class="line">$chkconfig ntpd off</div><div class="line">$mv /etc/ntp.conf /etc/ntp.conf.org</div></pre></td></tr></table></figure></p>
+<h4 id="关闭防火墙"><a href="#关闭防火墙" class="headerlink" title="关闭防火墙"></a>关闭防火墙</h4><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div></pre></td><td class="code"><pre><div class="line">$chkconfig --list iptables</div><div class="line">$chkconfig iptables off</div><div class="line">$chkconfig --list iptables</div><div class="line">$service iptables stop</div><div class="line">$service network restart</div><div class="line">关闭selinux</div><div class="line">$vi /etc/selinux/config</div><div class="line">disable</div></pre></td></tr></table></figure>
+<h4 id="修改用户限制"><a href="#修改用户限制" class="headerlink" title="修改用户限制"></a>修改用户限制</h4><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div></pre></td><td class="code"><pre><div class="line">$vi /etc/security/limits.conf</div><div class="line">oracle          soft   nofile         4096</div><div class="line">oracle          hard   nofile         65536</div><div class="line">oracle          soft   nproc          2047</div><div class="line">oracle          hard   nproc          16384</div><div class="line">oracle          soft   stack          10240</div><div class="line">grid            soft   nofile         4096</div><div class="line">grid            hard   nofile         65536</div><div class="line">grid            soft   nproc          2047</div><div class="line">grid            hard   nproc          16384</div><div class="line">grid            soft   stack          10240</div><div class="line">*               soft   memlock        18874368</div><div class="line">*               hard   memlock        18874368</div><div class="line">#以上memlock&lt;ram的大小 单位为k</div></pre></td></tr></table></figure>
+<h4 id="vi-etc-pam-d-login"><a href="#vi-etc-pam-d-login" class="headerlink" title="vi /etc/pam.d/login"></a>vi /etc/pam.d/login</h4><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">echo &quot;session    required     pam_limits.so&quot; &gt;&gt;/etc/pam.d/login</div></pre></td></tr></table></figure>
+<h4 id="安装OS软件包"><a href="#安装OS软件包" class="headerlink" title="安装OS软件包"></a>安装OS软件包</h4><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div><div class="line">34</div><div class="line">35</div><div class="line">36</div></pre></td><td class="code"><pre><div class="line">$rpm -q binutils \</div><div class="line">compat-libstdc++-33 \</div><div class="line">elfutils-libelf \</div><div class="line">elfutils-libelf-devel \</div><div class="line">gcc \</div><div class="line">gcc-c++ \</div><div class="line">glibc \</div><div class="line">glibc-common \</div><div class="line">glibc-devel \</div><div class="line">glibc-headers \</div><div class="line">ksh \</div><div class="line">libaio \</div><div class="line">libaio-devel \</div><div class="line">libgcc \</div><div class="line">libstdc++ \</div><div class="line">libstdc++-devel \</div><div class="line">libXp \</div><div class="line">make \</div><div class="line">numactl-devel \</div><div class="line">sysstat \</div><div class="line">unixODBC \</div><div class="line">unixODBC-devel \</div><div class="line">compat-libcap1.x86_64 \</div><div class="line">libcap.x86_64|grep not</div><div class="line">一般要安装下面的软件包</div><div class="line">$yum install -y compat-libstdc++-33</div><div class="line">$yum install -y elfutils-libelf-devel</div><div class="line">$yum install -y gcc-c++</div><div class="line">$yum install -y ksh</div><div class="line">$yum install -y libaio-devel</div><div class="line">$yum install -y libstdc++-devel</div><div class="line">$yum install -y libXp</div><div class="line">$yum install -y numactl-devel</div><div class="line">$yum install -y unixODBC</div><div class="line">$yum install -y unixODBC-devel</div><div class="line">$yum install -y compat-libcap1.x86_64</div></pre></td></tr></table></figure>
+<h4 id="格式化共享磁盘"><a href="#格式化共享磁盘" class="headerlink" title="格式化共享磁盘"></a>格式化共享磁盘</h4><p><em>存储直接划分3个存储组件所需磁盘</em><br>Disk /dev/sdb: 6GB<br>Disk /dev/sdc: 1.5T<br>Disk /dev/sdd: 1.5T</p>
+<h4 id="UDEV绑定磁盘"><a href="#UDEV绑定磁盘" class="headerlink" title="UDEV绑定磁盘"></a>UDEV绑定磁盘</h4><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div></pre></td><td class="code"><pre><div class="line">$for i in b c d ;</div><div class="line">do</div><div class="line">echo &quot;KERNEL==\&quot;sd*\&quot;, BUS==\&quot;scsi\&quot;, PROGRAM==\&quot;/sbin/scsi_id --whitelisted --replace-whitespace --device=/dev/\$name\&quot;, RESULT==\&quot;`/sbin/scsi_id --whitelisted --replace-whitespace --device=/dev/sd$i`\&quot;, NAME=\&quot;asm-disk$i\&quot;, OWNER=\&quot;grid\&quot;, GROUP=\&quot;asmadmin\&quot;, MODE=\&quot;0660\&quot;&quot;  &gt;&gt; /etc/udev/rules.d/99-oracle-asmdevices.rules </div><div class="line">done</div></pre></td></tr></table></figure>
+<h4 id="创建grid、oracle用户"><a href="#创建grid、oracle用户" class="headerlink" title="创建grid、oracle用户"></a>创建grid、oracle用户</h4><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div><div class="line">34</div><div class="line">35</div></pre></td><td class="code"><pre><div class="line">$/usr/sbin/groupadd -g 501 oinstall</div><div class="line">$/usr/sbin/groupadd -g 502 asmadmin</div><div class="line">$/usr/sbin/groupadd -g 503 dba</div><div class="line">$/usr/sbin/groupadd -g 504 oper</div><div class="line">$/usr/sbin/groupadd -g 505 asmdba</div><div class="line">$/usr/sbin/groupadd -g 506 asmoper</div><div class="line">$/usr/sbin/useradd -u 501 -g oinstall -G asmadmin,asmdba,asmoper,oper,dba grid</div><div class="line">$/usr/sbin/useradd -u 502 -g oinstall -G dba,asmdba,oper oracle</div><div class="line"></div><div class="line">#配置环境变量</div><div class="line">$su- grid</div><div class="line">$Vi .bash_profile</div><div class="line">umask 022</div><div class="line">export ORACLE_BASE=/u01/app/grid_base</div><div class="line">export ORACLE_HOME=/u01/app/grid_home</div><div class="line">export ORACLE_SID=+ASM1  #第二个节点+ASM2</div><div class="line">export PATH=/usr/sbin:$PATH</div><div class="line">export PATH=$ORACLE_HOME/bin:$PATH</div><div class="line"></div><div class="line">$su- oracle</div><div class="line">$Vi .bash_profile</div><div class="line">umask 022</div><div class="line">export ORACLE_BASE=/u01/app/oracle</div><div class="line">export ORACLE_HOME=$ORACLE_BASE/product/11.2.0/db_1</div><div class="line">export ORA_GRID_HOME=/u01/app/grid_home</div><div class="line">export ORACLE_UNQNAME=wwlc  </div><div class="line">export ORACLE_SID=wwlc1 #第二个节点wwlc2  </div><div class="line">export PATH=/usr/sbin:$PATH</div><div class="line">export PATH=$ORACLE_HOME/bin:$PATH</div><div class="line">export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$ORACLE_HOME/lib:/usr/lib</div><div class="line">export CLASSPATH=$ORACLE_HOME/JRE:$ORACLE_HOME/jlib:$ORACLE_HOME/rdbms/jlib</div><div class="line">export NLS_LANG=AMERICAN_AMERICA.AL32UTF8</div><div class="line">export NLS_DATE_FORMAT=&quot;YYYY-MM-DD HH24:MI:SS&quot;</div><div class="line">export TNS_ADMIN=$ORACLE_HOME/network/admin</div><div class="line">export LANG=en_US</div></pre></td></tr></table></figure>
+<h4 id="创建安装目录"><a href="#创建安装目录" class="headerlink" title="创建安装目录"></a>创建安装目录</h4><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div></pre></td><td class="code"><pre><div class="line">$Oraclemkdir -p /u01/app/</div><div class="line">$Oraclemkdir –p /u01/app/grid_base</div><div class="line">$Oraclemkdir –p /u01/app/grid_home</div><div class="line">$Oraclechown -R grid:oinstall /u01/app/grid_base</div><div class="line">$Oraclechown -R grid:oinstall /u01/app/grid_home</div><div class="line">$Oraclechown -R oracle:oinstall /u01/app</div><div class="line">$Oraclechmod -R 775 /u01/app/</div></pre></td></tr></table></figure>
+<h3 id="安装GRID"><a href="#安装GRID" class="headerlink" title="安装GRID"></a>安装GRID</h3><h4 id="准备软件"><a href="#准备软件" class="headerlink" title="准备软件"></a>准备软件</h4><p><em>软件上传至/u01/software</em><br>p13390677_112040_Linux-x86-64_1of7.zip<br>p13390677_112040_Linux-x86-64_2of7.zip<br>p13390677_112040_Linux-x86-64_3of7.zip</p>
+<h4 id="配置对等性"><a href="#配置对等性" class="headerlink" title="配置对等性"></a>配置对等性</h4><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div></pre></td><td class="code"><pre><div class="line">准备秘钥</div><div class="line">$su - grid</div><div class="line">$mkdir ~/.ssh</div><div class="line">$ssh-keygen -t rsa</div><div class="line">$ssh-keygen -t dsa</div><div class="line"></div><div class="line">$su - oracle</div><div class="line">$mkdir ~/.ssh</div><div class="line">$ssh-keygen -t rsa</div><div class="line">$ssh-keygen -t dsa</div><div class="line"></div><div class="line">在节点1执行</div><div class="line">$su - grid</div><div class="line">$cat ~/.ssh/id_rsa.pub&gt;&gt;./.ssh/authorized_keys  --公钥存在authorized_keys文件中,写到本机</div><div class="line">$cat ~/.ssh/id_dsa.pub&gt;&gt;./.ssh/authorized_keys</div><div class="line">$ssh testOracle3Z-PRI cat ~/.ssh/id_rsa.pub &gt;&gt; ~/.ssh/authorized_keys  --第二个节点的公钥写到本机</div><div class="line">$ssh testOracle3Z-PRI cat ~/.ssh/id_dsa.pub &gt;&gt; ~/.ssh/authorized_keys</div><div class="line">$scp ~/.ssh/authorized_keys testOracle3Z-PRI:~/.ssh/authorized_keys</div><div class="line"></div><div class="line">$su - oracle</div><div class="line">$cat ~/.ssh/id_rsa.pub&gt;&gt;./.ssh/authorized_keys  --公钥存在authorized_keys文件中,写到本机</div><div class="line">$cat ~/.ssh/id_dsa.pub&gt;&gt;./.ssh/authorized_keys</div><div class="line">$ssh testOracle3Z-PRI cat ~/.ssh/id_rsa.pub &gt;&gt; ~/.ssh/authorized_keys  --第二个节点的公钥写到本机</div><div class="line">$ssh testOracle3Z-PRI cat ~/.ssh/id_dsa.pub &gt;&gt; ~/.ssh/authorized_keys</div><div class="line">$scp ~/.ssh/authorized_keys testOracle3Z-PRI:~/.ssh/authorized_keys</div><div class="line"></div><div class="line">验证</div><div class="line">$ssh rac1 date   (public网卡)</div><div class="line">$ssh rac2 date</div><div class="line">$ssh rac1-priv date  (private网卡)</div><div class="line">$ssh rac2-priv date</div></pre></td></tr></table></figure>
+<h4 id="安装预检查"><a href="#安装预检查" class="headerlink" title="安装预检查"></a>安装预检查</h4><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div></pre></td><td class="code"><pre><div class="line">$su - grid</div><div class="line">$cd grid的软件目录</div><div class="line">$./runcluvfy.sh stage -pre crsinst -n rac1,rac2 -verbose</div></pre></td></tr></table></figure>
+<h4 id="准备响应文件"><a href="#准备响应文件" class="headerlink" title="准备响应文件"></a>准备响应文件</h4><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div></pre></td><td class="code"><pre><div class="line">$vi crsinst </div><div class="line">ORACLE_HOSTNAME=rac1</div><div class="line">INVENTORY_LOCATION=/u01/app/oraInventory</div><div class="line">oracle.install.option=CRS_CONFIG</div><div class="line">ORACLE_BASE=/u01/app/grid_base</div><div class="line">ORACLE_HOME=/u01/app/grid_home</div><div class="line">oracle.install.asm.OSDBA=asmdba</div><div class="line">oracle.install.asm.OSOPER=asmoper</div><div class="line">oracle.install.asm.OSASM=asmadmin</div><div class="line">oracle.install.crs.config.gpnp.scanPort=1521</div><div class="line">oracle.install.crs.config.clusterName=rac-cluster</div><div class="line">oracle.install.crs.config.clusterNodes=rac1:rac1-vip,rac2:rac2-vip</div><div class="line">oracle.install.crs.config.privateInterconnects=edge1:192.168.1.0:2,edge0:192.168.199.0:1   //1代表public，2代表private，3代表在群集中不使用该网卡</div><div class="line">oracle.install.crs.config.storageOption=ASM_STORAGE</div><div class="line">oracle.install.asm.SYSASMPassword=grid123456</div><div class="line">oracle.install.asm.diskGroup.name=OCR</div><div class="line">oracle.install.asm.diskGroup.redundancy=External</div><div class="line">oracle.install.asm.diskGroup.AUSize=1</div><div class="line">oracle.install.asm.diskGroup.disks=/dev/asm-diskb</div><div class="line">oracle.install.asm.diskGroup.diskDiscoveryString=/dev/asm-disk*</div><div class="line">oracle.install.asm.monitorPassword=grid</div></pre></td></tr></table></figure>
+<h4 id="安装grid"><a href="#安装grid" class="headerlink" title="安装grid"></a>安装grid</h4><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div></pre></td><td class="code"><pre><div class="line">$./runInstaller -silent -responseFile /u01/software/grid/response/crs_install_test.rsp -ignoreSysPrereqs -ignorePrereq</div><div class="line">等待一段时间后，会提示在两个节点分别用root用户执行：</div><div class="line">#/u01/grid/oraInventory/orainstRoot.sh</div><div class="line">#/u01/crs/11.2.0/root.sh</div></pre></td></tr></table></figure>
+<h4 id="创建磁盘组"><a href="#创建磁盘组" class="headerlink" title="创建磁盘组"></a>创建磁盘组</h4><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div></pre></td><td class="code"><pre><div class="line">#su – grid</div><div class="line">$asmca</div><div class="line">或者使用命令行</div><div class="line">$ asmca -silent -createDiskGroup -sysAsmPassword grid12345 -diskString &apos;/dev/asm-disk*&apos; -diskGroupName DATA -diskList &apos;/dev/asm-diskc&apos; -redundancy External-compatible.asm 11.2 -compatible.rdbms 11.2 </div><div class="line">$ asmca -silent -createDiskGroup -sysAsmPassword grid12345 -diskString &apos;/dev/asm-disk*&apos; -diskGroupName ARCH -diskList &apos;/dev/asm-diskd&apos; -redundancy External-compatible.asm 11.2 -compatible.rdbms 11.2</div></pre></td></tr></table></figure>
+<h3 id="安装Database-图形安装可省略"><a href="#安装Database-图形安装可省略" class="headerlink" title="安装Database(图形安装可省略)"></a>安装Database(图形安装可省略)</h3><h4 id="注册产品列表"><a href="#注册产品列表" class="headerlink" title="注册产品列表"></a>注册产品列表</h4><p>/u01/app/oraInventory/ContentsXMLinventory.xml<br>/u01/app/oraInventory/ContentsXML</p>
+<h4 id="准备响应文件-1"><a href="#准备响应文件-1" class="headerlink" title="准备响应文件"></a>准备响应文件</h4><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div></pre></td><td class="code"><pre><div class="line">$ vi /u01/soft/oracle/database/response/db_install_test.rsp</div><div class="line">oracle.install.option=INSTALL_DB_SWONLY</div><div class="line">ORACLE_HOSTNAME=rac1</div><div class="line">UNIX_GROUP_NAME=oinstall</div><div class="line">INVENTORY_LOCATION=/u01/app/oraInventory</div><div class="line">SELECTED_LANGUAGES=en</div><div class="line">ORACLE_HOME=/u01/app/oracle/product/11.2.0/db_1</div><div class="line">ORACLE_BASE=/u01/app/oracle</div><div class="line">oracle.install.db.InstallEdition=EE</div><div class="line">oracle.install.db.isCustomInstall=false</div><div class="line">oracle.install.db.optionalComponents=oracle.rdbms.partitioning:11.2.0.4.0,oracle.oraolap:11.2.0.4.0,oracle.rdbms.dm:11.2.0.4.0,oracle.rdbms.dv:11.2.0.4.0,oracle.rdbms.lbac:11.2.0.4.0,oracle.r</div><div class="line">dbms.rat:11.2.0.4.0oracle.install.db.DBA_GROUP=dba</div><div class="line">oracle.install.db.OPER_GROUP=oinstall</div><div class="line">oracle.install.db.CLUSTER_NODES=rac1,rac2</div><div class="line">DECLINE_SECURITY_UPDATES=true</div></pre></td></tr></table></figure>
+<h4 id="安装"><a href="#安装" class="headerlink" title="安装"></a>安装</h4><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div></pre></td><td class="code"><pre><div class="line">$./runInstaller -silent -ignoreSysPrereqs -ignorePrereq -responseFile /u01/software/database/response/db_install_test.rsp</div><div class="line">#/u01/grid/oraInventory/orainstRoot.sh</div><div class="line">#/u01/oracle/11.2.0/root.sh</div></pre></td></tr></table></figure>
+<h3 id="创建数据库"><a href="#创建数据库" class="headerlink" title="创建数据库"></a>创建数据库</h3><p><em>创建数据库可以使用dbca交互界面，也可以使用静默创建方式</em></p>
+<h4 id="准备响应文件-2"><a href="#准备响应文件-2" class="headerlink" title="准备响应文件"></a>准备响应文件</h4><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div></pre></td><td class="code"><pre><div class="line">$vi /u01/soft/oracle/database/response/dbca_orcl.rsp</div><div class="line">GDBNAME = &quot;wwlc&quot;</div><div class="line">SID = &quot;wwlc&quot;</div><div class="line">NODELIST=rac1,rac2</div><div class="line">SYSPASSWORD = &quot;wwlc123456&quot;</div><div class="line">SYSTEMPASSWORD = &quot;wwlc123456&quot;</div><div class="line">STORAGETYPE=ASM</div><div class="line">DISKGROUPNAME=DATA</div><div class="line">RECOVERYGROUPNAME=DATA</div><div class="line">CHARACTERSET = &quot;AL32UTF8&quot;</div></pre></td></tr></table></figure>
+<h4 id="创建数据库-1"><a href="#创建数据库-1" class="headerlink" title="创建数据库"></a>创建数据库</h4><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">dbca -silent -responseFile /u01/software/database/response/dbca_orcl.rsp</div></pre></td></tr></table></figure>
+<h3 id="参考"><a href="#参考" class="headerlink" title="参考"></a>参考</h3><p><a href="http://www.debugrun.com/a/bePB8gY.html" rel="external nofollow noopener noreferrer" target="_blank">阿里云上Oracle 11g RAC安装配置手册</a><br><a href="https://yq.aliyun.com/articles/88303" rel="external nofollow noopener noreferrer" target="_blank">手把手教你在ECS上部署Oracle RAC-博客-云栖社区-阿里云</a><br><a href="https://yq.aliyun.com/articles/62615" rel="external nofollow noopener noreferrer" target="_blank">如何在ECS上搭建Oracle？Oracle云上云下6种架构全解析-博客-云栖社区-阿里云</a></p>
+
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+      <div>
+        <ul class="post-copyright">
+  <li class="post-copyright-author">
+    <strong>本文作者：</strong>
+    Mapele
+  </li>
+  <li class="post-copyright-link">
+    <strong>本文链接：</strong>
+    <a href="http://mapele.coding.me/posts/43680/" title="Oracle11gR2 RAC Install On CentOS6.5小结">http://mapele.coding.me/posts/43680/</a>
+  </li>
+  <li class="post-copyright-license">
+    <strong>版权声明： </strong>
+    本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/3.0/" rel="external nofollow noopener noreferrer" target="_blank">CC BY-NC-SA 3.0</a> 许可协议。转载请注明出处！
+  </li>
+</ul>
+
+      </div>
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/oracle/" rel="tag"><i class="fa fa-tag"></i> oracle</a>
+          
+            <a href="/tags/RAC/" rel="tag"><i class="fa fa-tag"></i> RAC</a>
+          
+            <a href="/tags/ASM/" rel="tag"><i class="fa fa-tag"></i> ASM</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/posts/5864/" rel="next" title="Oracle TTS From windows to linux +ASM">
+                <i class="fa fa-chevron-left"></i> Oracle TTS From windows to linux +ASM
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/posts/43685/" rel="prev" title="Oracle11gR2 RAC配置单实例DG On CentOS6.5">
+                Oracle11gR2 RAC配置单实例DG On CentOS6.5 <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+
+    <div class="post-spread">
+      
+        
+  <div class="bdsharebuttonbox">
+    <a href="#" class="bds_tsina" data-cmd="tsina" title="分享到新浪微博"></a>
+    <a href="#" class="bds_douban" data-cmd="douban" title="分享到豆瓣网"></a>
+    <a href="#" class="bds_sqq" data-cmd="sqq" title="分享到QQ好友"></a>
+    <a href="#" class="bds_qzone" data-cmd="qzone" title="分享到QQ空间"></a>
+    <a href="#" class="bds_weixin" data-cmd="weixin" title="分享到微信"></a>
+    <a href="#" class="bds_tieba" data-cmd="tieba" title="分享到百度贴吧"></a>
+    <a href="#" class="bds_twi" data-cmd="twi" title="分享到Twitter"></a>
+    <a href="#" class="bds_fbook" data-cmd="fbook" title="分享到Facebook"></a>
+    <a href="#" class="bds_more" data-cmd="more"></a>
+    <a class="bds_count" data-cmd="count"></a>
+  </div>
+  <script>
+    window._bd_share_config = {
+      "common": {
+        "bdText": "",
+        "bdMini": "2",
+        "bdMiniList": false,
+        "bdPic": ""
+      },
+      "share": {
+        "bdSize": "16",
+        "bdStyle": "0"
+      },
+      "image": {
+        "viewList": ["tsina", "douban", "sqq", "qzone", "weixin", "twi", "fbook"],
+        "viewText": "分享到：",
+        "viewSize": "16"
+      }
+    }
+  </script>
+
+<script>
+  with(document)0[(getElementsByTagName('head')[0]||body).appendChild(createElement('script')).src='/static/api/js/share.js?v=89860593.js?cdnversion='+~(-new Date()/36e5)];
+</script>
+
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+  <div class="comments" id="comments">
+    
+      <div id="disqus_thread">
+        <noscript>
+          Please enable JavaScript to view the
+          <a href="https://disqus.com/?ref_noscript" rel="external nofollow noopener noreferrer" target="_blank">comments powered by Disqus.</a>
+        </noscript>
+      </div>
+    
+  </div>
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+      <div id="sidebar-dimmer"></div>
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope="" itemtype="http://schema.org/Person">
+          
+            <p class="site-author-name" itemprop="name">Mapele</p>
+            <p class="site-description motion-element" itemprop="description"></p>
+        </div>
+
+        <nav class="site-state motion-element">
+
+          
+            <div class="site-state-item site-state-posts">
+            
+              <a href="/archives">
+            
+                <span class="site-state-item-count">10</span>
+                <span class="site-state-item-name">日志</span>
+              </a>
+            </div>
+          
+
+          
+            
+            
+            <div class="site-state-item site-state-categories">
+              <a href="/categories/index.html">
+                <span class="site-state-item-count">10</span>
+                <span class="site-state-item-name">分类</span>
+              </a>
+            </div>
+          
+
+          
+            
+            
+            <div class="site-state-item site-state-tags">
+              <a href="/tags/index.html">
+                <span class="site-state-item-count">11</span>
+                <span class="site-state-item-name">标签</span>
+              </a>
+            </div>
+          
+
+        </nav>
+
+        
+          <div class="feed-link motion-element">
+            <a href="/atom.xml" rel="alternate">
+              <i class="fa fa-rss"></i>
+              RSS
+            </a>
+          </div>
+        
+
+        <div class="links-of-author motion-element">
+          
+        </div>
+
+        
+        
+
+        
+        
+
+        
+
+
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-3"><a class="nav-link" href="#前言"><span class="nav-number">1.</span> <span class="nav-text">前言</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#环境准备"><span class="nav-number">2.</span> <span class="nav-text">环境准备</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#硬件"><span class="nav-number">2.1.</span> <span class="nav-text">硬件</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#软件"><span class="nav-number">2.2.</span> <span class="nav-text">软件</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#架构及规划"><span class="nav-number">3.</span> <span class="nav-text">架构及规划</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#拓扑"><span class="nav-number">3.1.</span> <span class="nav-text">拓扑</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#配置规划"><span class="nav-number">3.2.</span> <span class="nav-text">配置规划</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#系统准备"><span class="nav-number">4.</span> <span class="nav-text">系统准备</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#修改主机名"><span class="nav-number">4.1.</span> <span class="nav-text">修改主机名</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#修改-etc-hosts"><span class="nav-number">4.2.</span> <span class="nav-text">修改/etc/hosts</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#修改内核参数"><span class="nav-number">4.3.</span> <span class="nav-text">修改内核参数</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#配置NTP"><span class="nav-number">4.4.</span> <span class="nav-text">配置NTP</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#关闭防火墙"><span class="nav-number">4.5.</span> <span class="nav-text">关闭防火墙</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#修改用户限制"><span class="nav-number">4.6.</span> <span class="nav-text">修改用户限制</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#vi-etc-pam-d-login"><span class="nav-number">4.7.</span> <span class="nav-text">vi /etc/pam.d/login</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#安装OS软件包"><span class="nav-number">4.8.</span> <span class="nav-text">安装OS软件包</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#格式化共享磁盘"><span class="nav-number">4.9.</span> <span class="nav-text">格式化共享磁盘</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#UDEV绑定磁盘"><span class="nav-number">4.10.</span> <span class="nav-text">UDEV绑定磁盘</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#创建grid、oracle用户"><span class="nav-number">4.11.</span> <span class="nav-text">创建grid、oracle用户</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#创建安装目录"><span class="nav-number">4.12.</span> <span class="nav-text">创建安装目录</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#安装GRID"><span class="nav-number">5.</span> <span class="nav-text">安装GRID</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#准备软件"><span class="nav-number">5.1.</span> <span class="nav-text">准备软件</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#配置对等性"><span class="nav-number">5.2.</span> <span class="nav-text">配置对等性</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#安装预检查"><span class="nav-number">5.3.</span> <span class="nav-text">安装预检查</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#准备响应文件"><span class="nav-number">5.4.</span> <span class="nav-text">准备响应文件</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#安装grid"><span class="nav-number">5.5.</span> <span class="nav-text">安装grid</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#创建磁盘组"><span class="nav-number">5.6.</span> <span class="nav-text">创建磁盘组</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#安装Database-图形安装可省略"><span class="nav-number">6.</span> <span class="nav-text">安装Database(图形安装可省略)</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#注册产品列表"><span class="nav-number">6.1.</span> <span class="nav-text">注册产品列表</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#准备响应文件-1"><span class="nav-number">6.2.</span> <span class="nav-text">准备响应文件</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#安装"><span class="nav-number">6.3.</span> <span class="nav-text">安装</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#创建数据库"><span class="nav-number">7.</span> <span class="nav-text">创建数据库</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#准备响应文件-2"><span class="nav-number">7.1.</span> <span class="nav-text">准备响应文件</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#创建数据库-1"><span class="nav-number">7.2.</span> <span class="nav-text">创建数据库</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#参考"><span class="nav-number">8.</span> <span class="nav-text">参考</span></a></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">
+  
+  &copy;  2012 &mdash; 
+  <span itemprop="copyrightYear">2019</span>
+  <span class="with-love">
+    <i class="fa fa-handshake-o"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Mapele</span>
+
+  
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-area-chart"></i>
+    </span>
+    
+      <span class="post-meta-item-text">总字数&#58;</span>
+    
+    <span title="总字数">
+      13.3k
+    </span>
+  
+</div>
+
+
+
+        
+<div class="busuanzi-count">
+  
+  <script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+  
+    <span class="site-uv">
+      <i class="fa fa-user"> 访客数</i>
+      <span class="busuanzi-value" id="busuanzi_value_site_uv"></span>
+      
+    </span>
+  
+
+  
+    <span class="site-pv">
+      <i class="fa fa-eye"> 访问量</i>
+      <span class="busuanzi-value" id="busuanzi_value_site_pv"></span>
+      
+    </span>
+  
+</div>
+
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+
+  
+  <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+
+  
+  <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+
+  
+  <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+
+  
+  <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+
+  
+  <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.1.2"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.1.2"></script>
+
+
+
+  
+  
+
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.2"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.1.2"></script>
+
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.2"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.1.2"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.1.2"></script>
+
+
+
+  
+
+
+  
+
+    
+      <script id="dsq-count-scr" src="https://mapele.disqus.com/count.js" async></script>
+    
+
+    
+      <script type="text/javascript">
+        var disqus_config = function () {
+          this.page.url = 'http://mapele.coding.me/posts/43680/';
+          this.page.identifier = 'posts/43680/';
+          this.page.title = 'Oracle11gR2 RAC Install On CentOS6.5小结';
+        };
+        var d = document, s = d.createElement('script');
+        s.src = 'https://mapele.disqus.com/embed.js';
+        s.setAttribute('data-timestamp', '' + +new Date());
+        (d.head || d.body).appendChild(s);
+      </script>
+    
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  <script type="text/javascript">
+    // Popup Window;
+    var isfetched = false;
+    var isXml = true;
+    // Search DB path;
+    var search_path = "search.xml";
+    if (search_path.length === 0) {
+      search_path = "search.xml";
+    } else if (/json$/i.test(search_path)) {
+      isXml = false;
+    }
+    var path = "/" + search_path;
+    // monitor main search box;
+
+    var onPopupClose = function (e) {
+      $('.popup').hide();
+      $('#local-search-input').val('');
+      $('.search-result-list').remove();
+      $('#no-result').remove();
+      $(".local-search-pop-overlay").remove();
+      $('body').css('overflow', '');
+    }
+
+    function proceedsearch() {
+      $("body")
+        .append('<div class="search-popup-overlay local-search-pop-overlay"></div>')
+        .css('overflow', 'hidden');
+      $('.search-popup-overlay').click(onPopupClose);
+      $('.popup').toggle();
+      var $localSearchInput = $('#local-search-input');
+      $localSearchInput.attr("autocapitalize", "none");
+      $localSearchInput.attr("autocorrect", "off");
+      $localSearchInput.focus();
+    }
+
+    // search function;
+    var searchFunc = function(path, search_id, content_id) {
+      'use strict';
+
+      // start loading animation
+      $("body")
+        .append('<div class="search-popup-overlay local-search-pop-overlay">' +
+          '<div id="search-loading-icon">' +
+          '<i class="fa fa-spinner fa-pulse fa-5x fa-fw"></i>' +
+          '</div>' +
+          '</div>')
+        .css('overflow', 'hidden');
+      $("#search-loading-icon").css('margin', '20% auto 0 auto').css('text-align', 'center');
+
+      $.ajax({
+        url: path,
+        dataType: isXml ? "xml" : "json",
+        async: true,
+        success: function(res) {
+          // get the contents from search data
+          isfetched = true;
+          $('.popup').detach().appendTo('.header-inner');
+          var datas = isXml ? $("entry", res).map(function() {
+            return {
+              title: $("title", this).text(),
+              content: $("content",this).text(),
+              url: $("url" , this).text()
+            };
+          }).get() : res;
+          var input = document.getElementById(search_id);
+          var resultContent = document.getElementById(content_id);
+          var inputEventFunction = function() {
+            var searchText = input.value.trim().toLowerCase();
+            var keywords = searchText.split(/[\s\-]+/);
+            if (keywords.length > 1) {
+              keywords.push(searchText);
+            }
+            var resultItems = [];
+            if (searchText.length > 0) {
+              // perform local searching
+              datas.forEach(function(data) {
+                var isMatch = false;
+                var hitCount = 0;
+                var searchTextCount = 0;
+                var title = data.title.trim();
+                var titleInLowerCase = title.toLowerCase();
+                var content = data.content.trim().replace(/<[^>]+>/g,"");
+                var contentInLowerCase = content.toLowerCase();
+                var articleUrl = decodeURIComponent(data.url);
+                var indexOfTitle = [];
+                var indexOfContent = [];
+                // only match articles with not empty titles
+                if(title != '') {
+                  keywords.forEach(function(keyword) {
+                    function getIndexByWord(word, text, caseSensitive) {
+                      var wordLen = word.length;
+                      if (wordLen === 0) {
+                        return [];
+                      }
+                      var startPosition = 0, position = [], index = [];
+                      if (!caseSensitive) {
+                        text = text.toLowerCase();
+                        word = word.toLowerCase();
+                      }
+                      while ((position = text.indexOf(word, startPosition)) > -1) {
+                        index.push({position: position, word: word});
+                        startPosition = position + wordLen;
+                      }
+                      return index;
+                    }
+
+                    indexOfTitle = indexOfTitle.concat(getIndexByWord(keyword, titleInLowerCase, false));
+                    indexOfContent = indexOfContent.concat(getIndexByWord(keyword, contentInLowerCase, false));
+                  });
+                  if (indexOfTitle.length > 0 || indexOfContent.length > 0) {
+                    isMatch = true;
+                    hitCount = indexOfTitle.length + indexOfContent.length;
+                  }
+                }
+
+                // show search results
+
+                if (isMatch) {
+                  // sort index by position of keyword
+
+                  [indexOfTitle, indexOfContent].forEach(function (index) {
+                    index.sort(function (itemLeft, itemRight) {
+                      if (itemRight.position !== itemLeft.position) {
+                        return itemRight.position - itemLeft.position;
+                      } else {
+                        return itemLeft.word.length - itemRight.word.length;
+                      }
+                    });
+                  });
+
+                  // merge hits into slices
+
+                  function mergeIntoSlice(text, start, end, index) {
+                    var item = index[index.length - 1];
+                    var position = item.position;
+                    var word = item.word;
+                    var hits = [];
+                    var searchTextCountInSlice = 0;
+                    while (position + word.length <= end && index.length != 0) {
+                      if (word === searchText) {
+                        searchTextCountInSlice++;
+                      }
+                      hits.push({position: position, length: word.length});
+                      var wordEnd = position + word.length;
+
+                      // move to next position of hit
+
+                      index.pop();
+                      while (index.length != 0) {
+                        item = index[index.length - 1];
+                        position = item.position;
+                        word = item.word;
+                        if (wordEnd > position) {
+                          index.pop();
+                        } else {
+                          break;
+                        }
+                      }
+                    }
+                    searchTextCount += searchTextCountInSlice;
+                    return {
+                      hits: hits,
+                      start: start,
+                      end: end,
+                      searchTextCount: searchTextCountInSlice
+                    };
+                  }
+
+                  var slicesOfTitle = [];
+                  if (indexOfTitle.length != 0) {
+                    slicesOfTitle.push(mergeIntoSlice(title, 0, title.length, indexOfTitle));
+                  }
+
+                  var slicesOfContent = [];
+                  while (indexOfContent.length != 0) {
+                    var item = indexOfContent[indexOfContent.length - 1];
+                    var position = item.position;
+                    var word = item.word;
+                    // cut out 100 characters
+                    var start = position - 20;
+                    var end = position + 80;
+                    if(start < 0){
+                      start = 0;
+                    }
+                    if (end < position + word.length) {
+                      end = position + word.length;
+                    }
+                    if(end > content.length){
+                      end = content.length;
+                    }
+                    slicesOfContent.push(mergeIntoSlice(content, start, end, indexOfContent));
+                  }
+
+                  // sort slices in content by search text's count and hits' count
+
+                  slicesOfContent.sort(function (sliceLeft, sliceRight) {
+                    if (sliceLeft.searchTextCount !== sliceRight.searchTextCount) {
+                      return sliceRight.searchTextCount - sliceLeft.searchTextCount;
+                    } else if (sliceLeft.hits.length !== sliceRight.hits.length) {
+                      return sliceRight.hits.length - sliceLeft.hits.length;
+                    } else {
+                      return sliceLeft.start - sliceRight.start;
+                    }
+                  });
+
+                  // select top N slices in content
+
+                  var upperBound = parseInt('1');
+                  if (upperBound >= 0) {
+                    slicesOfContent = slicesOfContent.slice(0, upperBound);
+                  }
+
+                  // highlight title and content
+
+                  function highlightKeyword(text, slice) {
+                    var result = '';
+                    var prevEnd = slice.start;
+                    slice.hits.forEach(function (hit) {
+                      result += text.substring(prevEnd, hit.position);
+                      var end = hit.position + hit.length;
+                      result += '<b class="search-keyword">' + text.substring(hit.position, end) + '</b>';
+                      prevEnd = end;
+                    });
+                    result += text.substring(prevEnd, slice.end);
+                    return result;
+                  }
+
+                  var resultItem = '';
+
+                  if (slicesOfTitle.length != 0) {
+                    resultItem += "<li><a href='" + articleUrl + "' class='search-result-title'>" + highlightKeyword(title, slicesOfTitle[0]) + "</a>";
+                  } else {
+                    resultItem += "<li><a href='" + articleUrl + "' class='search-result-title'>" + title + "</a>";
+                  }
+
+                  slicesOfContent.forEach(function (slice) {
+                    resultItem += "<a href='" + articleUrl + "'>" +
+                      "<p class=\"search-result\">" + highlightKeyword(content, slice) +
+                      "...</p>" + "</a>";
+                  });
+
+                  resultItem += "</li>";
+                  resultItems.push({
+                    item: resultItem,
+                    searchTextCount: searchTextCount,
+                    hitCount: hitCount,
+                    id: resultItems.length
+                  });
+                }
+              })
+            };
+            if (keywords.length === 1 && keywords[0] === "") {
+              resultContent.innerHTML = '<div id="no-result"><i class="fa fa-search fa-5x" /></div>'
+            } else if (resultItems.length === 0) {
+              resultContent.innerHTML = '<div id="no-result"><i class="fa fa-frown-o fa-5x" /></div>'
+            } else {
+              resultItems.sort(function (resultLeft, resultRight) {
+                if (resultLeft.searchTextCount !== resultRight.searchTextCount) {
+                  return resultRight.searchTextCount - resultLeft.searchTextCount;
+                } else if (resultLeft.hitCount !== resultRight.hitCount) {
+                  return resultRight.hitCount - resultLeft.hitCount;
+                } else {
+                  return resultRight.id - resultLeft.id;
+                }
+              });
+              var searchResultList = '<ul class=\"search-result-list\">';
+              resultItems.forEach(function (result) {
+                searchResultList += result.item;
+              })
+              searchResultList += "</ul>";
+              resultContent.innerHTML = searchResultList;
+            }
+          }
+
+          if ('auto' === 'auto') {
+            input.addEventListener('input', inputEventFunction);
+          } else {
+            $('.search-icon').click(inputEventFunction);
+            input.addEventListener('keypress', function (event) {
+              if (event.keyCode === 13) {
+                inputEventFunction();
+              }
+            });
+          }
+
+          // remove loading animation
+          $(".local-search-pop-overlay").remove();
+          $('body').css('overflow', '');
+
+          proceedsearch();
+        }
+      });
+    }
+
+    // handle and trigger popup window;
+    $('.popup-trigger').click(function(e) {
+      e.stopPropagation();
+      if (isfetched === false) {
+        searchFunc(path, 'local-search-input', 'local-search-result');
+      } else {
+        proceedsearch();
+      };
+    });
+
+    $('.popup-btn-close').click(onPopupClose);
+    $('.popup').click(function(e){
+      e.stopPropagation();
+    });
+    $(document).on('keyup', function (event) {
+      var shouldDismissSearchPopup = event.which === 27 &&
+        $('.search-popup').is(':visible');
+      if (shouldDismissSearchPopup) {
+        onPopupClose();
+      }
+    });
+  </script>
+
+
+
+
+
+  
+
+  
+<script>
+(function(){
+    var bp = document.createElement('script');
+    var curProtocol = window.location.protocol.split(':')[0];
+    if (curProtocol === 'https') {
+        bp.src = 'https://zz.bdstatic.com/linksubmit/push.js';        
+    }
+    else {
+        bp.src = 'http://push.zhanzhang.baidu.com/push.js';
+    }
+    var s = document.getElementsByTagName("script")[0];
+    s.parentNode.insertBefore(bp, s);
+})();
+</script>
+
+
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>
