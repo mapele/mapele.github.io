@@ -336,9 +336,9 @@ mysql&gt; grant all privileges on *.* to &apos;root&apos;@&apos;%&apos; identifi
         
         <tags>
             
-            <tag> mysql </tag>
-            
             <tag> install </tag>
+            
+            <tag> mysql </tag>
             
         </tags>
         
@@ -906,9 +906,9 @@ mysql&gt; grant all privileges on *.* to &apos;root&apos;@&apos;%&apos; identifi
         
         <tags>
             
-            <tag> install </tag>
-            
             <tag> oracle </tag>
+            
+            <tag> install </tag>
             
         </tags>
         

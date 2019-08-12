@@ -202,9 +202,9 @@
       <category term="Install" scheme="http://mapele.coding.me/categories/Database/Mysql/Install/"/>
     
     
-      <category term="mysql" scheme="http://mapele.coding.me/tags/mysql/"/>
-    
       <category term="install" scheme="http://mapele.coding.me/tags/install/"/>
+    
+      <category term="mysql" scheme="http://mapele.coding.me/tags/mysql/"/>
     
   </entry>
   
@@ -331,9 +331,9 @@
       <category term="Install" scheme="http://mapele.coding.me/categories/Database/Oracle/Install/"/>
     
     
-      <category term="install" scheme="http://mapele.coding.me/tags/install/"/>
-    
       <category term="oracle" scheme="http://mapele.coding.me/tags/oracle/"/>
+    
+      <category term="install" scheme="http://mapele.coding.me/tags/install/"/>
     
   </entry>
   
